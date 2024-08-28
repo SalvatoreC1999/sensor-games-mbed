@@ -5,7 +5,7 @@ using namespace std;
 
 DigitalOut trigger(D7);
 InterruptIn echo(D6);
-DigitalIn ir_sensor(A0); // Sensore IR collegato a un pin analogico
+DigitalIn ir_sensor(D3, PullDown); // Configura il pin del sensore IR con pull-down interno
 BufferedSerial pc(USBTX, USBRX, 9600);
 
 Timer timer;
@@ -105,12 +105,11 @@ void check_command() {
 }
 
 void trigger_red_light() {
-    red_light_active = true;
     char buffer[100];
     int len = sprintf(buffer, "{\"status\": \"RED_LIGHT\",\"score\": %d, \"lives\": %d}\n",score,lives);
     pc.write(buffer, len);
     ThisThread::sleep_for(2s); // Tempo durante il quale la "Luce Rossa" è attiva
-    red_light_active = false;
+    red_light_active = true;
 }
 
 
@@ -159,12 +158,11 @@ void process_game() {
             break;
         }
         case DODGE_OBSTACLE: {
-                if ((rand() % 10) < 1) { // 10% di probabilità ogni ciclo
+                if ((rand() % 20) < 1) { // 5% di probabilità ogni ciclo
                 trigger_red_light();
             }
                 if (red_light_active) {
-                    ThisThread::sleep_for(1000ms);
-                    if (ir_sensor.read() == 1) { // Mano vicino al sensore
+                    if (ir_sensor.read() == 0) { // Mano vicino al sensore
                         lives--;
                         char buffer[100];
                         int len = sprintf(buffer, "{\"status\": \"HIT\", \"score\": %d, \"lives\": %d}\n",score, lives);
@@ -176,7 +174,7 @@ void process_game() {
                         }
                     }
                 } else {
-                    if (ir_sensor.read() == 1) { // Mano vicino al sensore
+                    if (ir_sensor.read() == 0) { // Mano vicino al sensore
                         score++;
                     }
             }
