@@ -22,7 +22,7 @@ bool measuring = false;
 bool running = false;
 bool red_light_active = false;
 
-enum GameMode { NO_GAME, DISTANCE_MATCH, DODGE_OBSTACLE };
+enum GameMode { NO_GAME, DISTANCE_MATCH, RED_LIGHT_GREEN_LIGHT };
 
 GameMode current_game_mode = NO_GAME;
 
@@ -49,7 +49,7 @@ const char* get_game_mode_str(GameMode mode) {
     switch (mode) {
         case NO_GAME: return "NO_GAME";
         case DISTANCE_MATCH: return "DISTANCE_MATCH";
-        case DODGE_OBSTACLE: return "DODGE_OBSTACLE";
+        case RED_LIGHT_GREEN_LIGHT: return "RED_LIGHT_GREEN_LIGHT";
         default: return "UNKNOWN";
     }
 }
@@ -65,7 +65,7 @@ void start_new_round() {
             measuring = false;
             break;
         }
-        case DODGE_OBSTACLE: {
+        case RED_LIGHT_GREEN_LIGHT: {
                 red_light_active = false;
                 running = ir_sensor.read() == 1;
                 char buffer[100];
@@ -90,7 +90,7 @@ void check_command() {
             score= 0;
             lives = 3; 
         }else if (strcmp(buffer, "DO") == 0) {
-            current_game_mode = DODGE_OBSTACLE;
+            current_game_mode = RED_LIGHT_GREEN_LIGHT;
             score= 0;
             lives = 3; 
         } 
@@ -161,7 +161,7 @@ void process_game() {
         }
             break;
         }
-        case DODGE_OBSTACLE: {
+        case RED_LIGHT_GREEN_LIGHT: {
                 if ((rand() % 40) < 1) { // 5% di probabilità ogni ciclo
                 trigger_red_light();
             }
