@@ -69,7 +69,7 @@ void start_new_round() {
                 red_light_active = false;
                 running = ir_sensor.read() == 1;
                 char buffer[100];
-                int len = sprintf(buffer, "{\"status\": \"NEW_ROUND\", \"score\": %d, \"lives\": %d}\n", score, lives);
+                int len = sprintf(buffer, "{\"status\": \"NEW_ROUND\",\"game_mode\": \"%s\", \"score\": %d, \"lives\": %d,\"sensor_active\": %d}\n", get_game_mode_str(current_game_mode), score,  lives,ir_sensor.read() == 0);
                 pc.write(buffer, len);
             break;
         }
@@ -86,9 +86,13 @@ void check_command() {
         buffer[len] = '\0';
 
         if (strcmp(buffer, "DM") == 0) {
-            current_game_mode = DISTANCE_MATCH;   
+            current_game_mode = DISTANCE_MATCH;  
+            score= 0;
+            lives = 3; 
         }else if (strcmp(buffer, "DO") == 0) {
             current_game_mode = DODGE_OBSTACLE;
+            score= 0;
+            lives = 3; 
         } 
 
         if (strcmp(buffer, "START") == 0) {
@@ -106,7 +110,7 @@ void check_command() {
 
 void trigger_red_light() {
     char buffer[100];
-    int len = sprintf(buffer, "{\"status\": \"RED_LIGHT\",\"score\": %d, \"lives\": %d}\n",score,lives);
+    int len = sprintf(buffer, "{\"status\": \"RED_LIGHT\",\"score\": %d, \"lives\": %d,\"sensor_active\": %d}\n",score,lives,ir_sensor.read() == 0);
     pc.write(buffer, len);
     ThisThread::sleep_for(2s); // Tempo durante il quale la "Luce Rossa" è attiva
     red_light_active = true;
@@ -158,20 +162,16 @@ void process_game() {
             break;
         }
         case DODGE_OBSTACLE: {
-                if ((rand() % 20) < 1) { // 5% di probabilità ogni ciclo
+                if ((rand() % 40) < 1) { // 5% di probabilità ogni ciclo
                 trigger_red_light();
             }
                 if (red_light_active) {
                     if (ir_sensor.read() == 0) { // Mano vicino al sensore
                         lives--;
                         char buffer[100];
-                        int len = sprintf(buffer, "{\"status\": \"HIT\", \"score\": %d, \"lives\": %d}\n",score, lives);
+                        int len = sprintf(buffer, "{\"status\": \"HIT\", \"score\": %d, \"lives\": %d,\"sensor_active\": %d}\n",score, lives,ir_sensor.read() == 0);
                         pc.write(buffer, len);
-                        if (lives <= 0) {
-                            game_over = true;
-                            len = sprintf(buffer, "{\"status\": \"GAME_OVER\", \"score\": %d,\"lives\": %d}\n", score, lives);
-                            pc.write(buffer, len);
-                        }
+                        ThisThread::sleep_for(8s);
                     }
                 } else {
                     if (ir_sensor.read() == 0) { // Mano vicino al sensore
