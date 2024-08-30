@@ -109,11 +109,17 @@ void check_command() {
 }
 
 void trigger_red_light() {
-    char buffer[100];
-    int len = sprintf(buffer, "{\"status\": \"RED_LIGHT\",\"score\": %d, \"lives\": %d,\"sensor_active\": %d}\n",score,lives,ir_sensor.read() == 0);
-    pc.write(buffer, len);
-    ThisThread::sleep_for(2s); // Tempo durante il quale la "Luce Rossa" è attiva
-    red_light_active = true;
+    Timer red_light_timer;
+    red_light_timer.start();
+    
+    // Invia il messaggio "RED_LIGHT" per 2 secondi
+    while (red_light_timer.read() < 2) {
+        char buffer[100];
+        int len = sprintf(buffer, "{\"status\": \"RED_LIGHT\",\"score\": %d, \"lives\": %d,\"sensor_active\": %d}\n", score, lives, ir_sensor.read() == 0);
+        pc.write(buffer, len);
+        ThisThread::sleep_for(100ms);  // Breve pausa per non sovraccaricare la comunicazione seriale
+        red_light_active = true;
+    }
 }
 
 
