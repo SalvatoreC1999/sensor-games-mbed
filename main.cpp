@@ -151,7 +151,7 @@ void process_game() {
                         points = (points < 0) ? 0 : points;
                     }
                     score += points;
-                    int len = sprintf(buffer, "{\"status\": \"SUCCESS\", \"round_points\": %d, \"threshold_distance\": %d, \"distance\": %d, \"score\": %d}\n", points, threshold_distance, (int)measured_distance, score);
+                    int len = sprintf(buffer, "{\"status\": \"SUCCESS\",\"lives\": %d, \"round_points\": %d, \"threshold_distance\": %d, \"distance\": %d, \"score\": %d}\n",lives, points, threshold_distance, (int)measured_distance, score);
                     pc.write(buffer, len);
                 } 
                 ThisThread::sleep_for(3s);
